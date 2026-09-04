@@ -1,0 +1,16 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "timeout": 120,
+  "max_retries": 3,
+  "primary_free_model": "minimax/minimax-m3:free",
+  "fallback_free_models": [
+    "z-ai/glm-5.2:free",
+    "google/gemma-4-31b-it:free",
+    "nemotron-3-super-120b-a12b:free"
+  ],
+  "extensible_paid_slot": {
+    "enabled": false,
+    "note": "扩展位：未来企业可在此替换为任意付费模型（如 gpt-4o），无需改代码",
+    "default_paid_model": ""
+  }
+}
