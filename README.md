@@ -1,21 +1,69 @@
 # Hybrid LLM Router & Cost Optimizer
 
-智能路由 + 降本网关：微调一个小型路由模型（Qwen-1.5B），一眼区分请求难度，简单→本地 7B、困难→OpenRouter 免费模型，配合级联容错与 FinOps 计费剖析，帮企业降低大模型 API 成本。全程用免费模型落地，接口预留可扩展为任意付费模型。
+A smart routing + cost-optimization gateway for LLM APIs: fine-tune a small routing model (Qwen-1.5B) to judge request difficulty at a glance, send simple requests to a local 7B model and complex ones to an OpenRouter free model, with cascading fallback and FinOps billing analytics. Built entirely with free models; the interface is extensible to any paid model later.
 
-> 详细项目计划见 `reports/20260904_0050_LLMRouter_ProjectPlan.md`（reports 目录位于上级 workspace，GitHub 版 README 将于 Phase 6 补齐）。
+## Status
 
-## 状态
+- Project scaffold established (see structure below)
+- In development: Phase 1 data engineering
 
-- 项目骨架已建立（见目录结构）
-- 开发进行中：Phase 1 数据工程
+## Overview
 
-## 目录结构
+| Tier | Executing model | Location | Cost |
+|------|----------------|----------|------|
+| Routing decision | Router-1.5B (fine-tuned) | Local GPU0 | $0 |
+| [LOW] simple request | Local-7B-AWQ | Local GPU1 | $0 |
+| [HIGH] hard request | OpenRouter free model (default `minimax/minimax-m3:free`) | Cloud API | $0 |
+| [HIGH] extension slot | Any paid model (e.g. GPT-4o) | Cloud API | Enterprise config |
+
+## Directory Structure
 
 ```
-src/                    核心代码
-  openrouter_client.py   OpenRouter 免费模型封装 + 自动轮换 + 付费扩展位
-configs/                计费表、模型列表配置
-data/                   种子数据 / 黄金集
-scripts/                启动脚本
-tests/                  测试
+src/                    Core code
+  openrouter_client.py   OpenRouter free-model client + auto-rotation + paid extension slot
+  make_seed_dataset.py   Task 1.1: extract seed prompts from LMSYS parquet
+  make_router_dataset.py Task 1.2/1.4: label difficulty via OpenRouter + Pydantic validation
+configs/                Model list / billing config
+data/                   Seed data / golden dataset (raw files git-ignored)
+scripts/                Startup scripts
+tests/                  Tests
 ```
+
+## Getting Started
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt   # (P0: requirements.txt to be added)
+```
+
+Load the seed prompts into `data/seed_prompts.jsonl`:
+
+```bash
+python src/make_seed_dataset.py \
+  --parquet data/train-00000-of-00006-*.parquet data/train-00001-of-00006-*.parquet \
+  --output data/seed_prompts.jsonl \
+  --limit 2000
+```
+
+Label the difficulty of each seed prompt via OpenRouter free models:
+
+```bash
+python src/make_router_dataset.py \
+  --input data/seed_prompts.jsonl \
+  --output data/router_train_gold.jsonl \
+  --limit 2000
+```
+
+> The OpenRouter API key is read from a shared `.env` at runtime (memory only, never printed, logged, or committed). Only `key_set=True/False` is ever logged.
+
+## Roadmap
+
+| Phase | Scope |
+|-------|-------|
+| P1 | Data engineering: seed extraction, labeling, calibration |
+| P2 | SFT fine-tune Router-1.5B + AWQ quantization |
+| P3 | Dual-GPU vLLM deployment |
+| P4 | Gateway server + cascade fallback |
+| P5 | Stress test + billing report |
+| P6 | Delivery: docs, demo, interview prep |
