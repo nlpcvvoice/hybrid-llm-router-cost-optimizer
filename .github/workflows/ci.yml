@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Syntax check all src python
+        run: |
+          python3 - <<'EOF'
+          from pathlib import Path
+          import sys
+
+          files = sorted(Path("src").glob("*.py"))
+          bad = []
+          for p in files:
+              if p.name == "colab_train_classifier_head.py":
+                  # contains #%% md cells -> whole-file compile impossible; check python cells only
+                  for block in p.read_text(encoding="utf-8").split("#%% ")[1:]:
+                      kind, _, body = block.partition("\n")
+                      if kind == "python":
+                          try:
+                              compile(body, f"{p}:<md-cell>", "exec")
+                          except SyntaxError:
+                              bad.append(f"{p}:bad-md-cell")
+                              break
+              else:
+                  try:
+                      compile(p.read_text(encoding="utf-8"), str(p), "exec")
+                  except SyntaxError:
+                      bad.append(str(p))
+          if bad:
+              print("syntax FAIL:", bad)
+              sys.exit(1)
+          print("syntax OK:", ", ".join(p.name for p in files))
+          EOF
+      - name: Validate notebook JSON and compile code cells
+        run: |
+          python3 - <<'EOF'
+          import json
+          from pathlib import Path
+          import sys
+
+          nbs = sorted(Path("notebooks").glob("*.ipynb"))
+          for p in nbs:
+              nb = json.loads(p.read_text(encoding="utf-8"))
+              assert nb["nbformat"] == 4, f"{p}: bad nbformat"
+              for i, c in enumerate(nb["cells"]):
+                  if c["cell_type"] == "code":
+                      compile("".join(c["source"]), f"{p}:cell{i}", "exec")
+          print("notebook OK:", ", ".join(p.name for p in nbs))
+          EOF

@@ -1,5 +1,7 @@
 # Hybrid LLM Router & Cost Optimizer
 
+[![CI](https://img.shields.io/github/actions/workflow/status/nlpcvvoice/hybrid-llm-router-cost-optimizer/ci.yml?branch=main&logo=github)](https://github.com/nlpcvvoice/hybrid-llm-router-cost-optimizer/actions/workflows/ci.yml)
+
 A smart routing + cost-optimization gateway for LLM APIs: fine-tune a small routing model (Qwen-1.5B) to judge request difficulty at a glance, send simple requests to a local 7B model and complex ones to an OpenRouter free model, with cascading fallback and FinOps billing analytics. Built entirely with free models; the interface is extensible to any paid model later.
 
 ## Status
