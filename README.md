@@ -6,8 +6,11 @@ A smart routing + cost-optimization gateway for LLM APIs: fine-tune a small rout
 
 ## Status
 
-- Project scaffold established (see structure below)
-- In development: Phase 1 data engineering
+- Phase 1 (data engineering) **complete**: seed → labeled gold → cleaned → calibrated → audited golden set
+- Phase 2 (fine-tuning) **in progress**: stratified split + Colab LoRA trainer ready, local CPU smoke next
+- CI **passing** (syntax + notebook validation on every push/PR)
+
+> 🎬 Live demo: coming with the Phase 3 gateway (router forwards LOW → local tier, HIGH → cloud pool).
 
 ## Overview
 
@@ -58,6 +61,22 @@ python src/make_router_dataset.py \
 ```
 
 > The OpenRouter API key is read from a shared `.env` at runtime (memory only, never printed, logged, or committed). Only `key_set=True/False` is ever logged.
+
+## Skills Used
+
+Accumulated per phase (updated as the project progresses).
+
+| Skill | Evidence | Phase |
+|-------|----------|-------|
+| Data engineering pipeline (parquet → jsonl, dedup, seeding) | `src/make_seed_dataset.py` | P1 |
+| LLM API reliability (free-model pool, 429 backoff, auto-rotation) | `src/openrouter_client.py` | P1 |
+| Prompt engineering + structured output (Pydantic-validated labels) | `src/make_router_dataset.py` | P1 |
+| Human⇄model calibration & imbalance-aware per-class reporting | `src/calibrate_labels.py` | P1 |
+| LLM-as-judge auditing of low-consensus labels | `src/audit_high_with_gemini.py` | P1 |
+| Stratified split + undersampling for class balance (3:1) | `src/make_train_split.py` | P2 |
+| LoRA fine-tuning (fp16, no bitsandbytes) + class-weighted loss | `src/colab_train_classifier_head.py` | P2 |
+| Self-contained Colab notebook engineering (buildable + compilable) | `src/build_colab_notebook.py` | P2 |
+| CI/CD: GitHub Actions syntax + notebook validation | `.github/workflows/ci.yml` | P2 |
 
 ## Roadmap
 
