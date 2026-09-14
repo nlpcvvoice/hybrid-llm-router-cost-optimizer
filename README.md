@@ -77,6 +77,9 @@ Accumulated per phase (updated as the project progresses).
 | LoRA fine-tuning (fp16, no bitsandbytes) + class-weighted loss | `src/colab_train_classifier_head.py` | P2 |
 | Self-contained Colab notebook engineering (buildable + compilable) | `src/build_colab_notebook.py` | P2 |
 | CI/CD: GitHub Actions syntax + notebook validation | `.github/workflows/ci.yml` | P2 |
+| Pascal (P100 sm_60) GPU compatibility engineering: Kaggle image ships a `google.colab` module (env-based detection misclassifies it → switch to `/kaggle` path probe), torch 2.7.0 wheel keeps sm_60 while 2.10+cu128 drops it, exact `triton==3.3.0` ABI pairing, inductor refuses CC<7 → monkeypatch `torch.compile`→eager, torchcodec 0.7 API break → librosa bypass, transformers 5.5 `and_mask_function` requires torch>=2.6 | `src/colab_train_gemma4_lora.py`, `reports/20260913_*` | P2.5 |
+| Production-grade trouble-shooting loop: 12 failed kernel runs → 7 root causes isolated, per-step pip markers + diag artifact design, banner/env forensics | `src/build_colab_gemma4.py`, `reports/20260913_*` | P2.5 |
+| Deployment-time precision knob: balanced training trades precision for recall (recall 60→100%), then logprob threshold sweep (top-n token aggregation + normalized P(HIGH)) recovers precision 16.7→21.1% @t.7 with F1 0.286→0.348. Unified-sweep head-to-head verdict: imbalanced 420/140 @t.5 beats balanced on P/F1/acc (test F1 .357/.308, P .25/.182) — balanced only wins recall (100%/62.5%) | `metrics.json`, `reports/20260913_1550_*`,`20260913_1610_*` | P2.5 |
 
 ## Roadmap
 
@@ -87,4 +90,5 @@ Accumulated per phase (updated as the project progresses).
 | P3 | Dual-GPU vLLM deployment |
 | P4 | Gateway server + cascade fallback |
 | P5 | Stress test + billing report |
+| P6 | Delivery: docs + demo + deployment baseline |
 | P6 | Delivery: docs + demo + deployment baseline |

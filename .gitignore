@@ -17,6 +17,9 @@ tmp/
 data/*.parquet
 data/*.jsonl
 
+# Derived evaluation/metrics artifacts (regenerated, large)
+outputs/
+
 # Kaggle
 .kaggle/
 
