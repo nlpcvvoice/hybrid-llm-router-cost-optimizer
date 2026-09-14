@@ -24,7 +24,7 @@ try:
     _tv = tuple(int(x) for x in _ver("torchao").split(".")[:2])
     if _tv < (0, 16):
         subprocess.check_call([sys.executable, "-m", "pip", "uninstall", "-y", "torchao"])
-        print("torchao 版本过低,已卸载(本训练不使用)")
+        print("torchao version too low; uninstalled (not needed for this training)")
 except Exception:
     pass
 print("deps ok:", _MISSING if _MISSING else "all present")
@@ -350,6 +350,6 @@ try:
     files.download("best_adapter.zip")
     files.download("metrics.json")
     files.download("baselines.json")
-    print("下载完成: best_adapter.zip + metrics.json + baselines.json 请存回 outputs/")
+    print("download complete: best_adapter.zip + metrics.json + baselines.json — save back to outputs/")
 except ImportError:
-    print("非 Colab 环境:跳过自动下载,产物已在本目录(可手动拷入 outputs/)")
+    print("Non-Colab environment: skipping auto-download; artifacts are in this directory (copy to outputs/ manually)")
