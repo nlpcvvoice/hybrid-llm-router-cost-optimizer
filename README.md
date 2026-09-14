@@ -91,4 +91,3 @@ Accumulated per phase (updated as the project progresses).
 | P4 | Gateway server + cascade fallback |
 | P5 | Stress test + billing report |
 | P6 | Delivery: docs + demo + deployment baseline |
-| P6 | Delivery: docs + demo + deployment baseline |
