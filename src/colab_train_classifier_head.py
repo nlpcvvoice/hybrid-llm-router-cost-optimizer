@@ -3,11 +3,12 @@
 
 **Goal**: fine-tune the 1.5B base into a LOW/HIGH difficulty router, so the cost-saving gateway can decide which requests go to which model.
 
-**Usage (2 interactions only)**
-1. Menu: Runtime ▶ Run all (data is embedded in the notebook's DATA cell, no upload needed)
-2. Training takes ~30–60 min, then auto-downloads `best_adapter.zip` and `metrics.json` back to the local `outputs/` dir
+**Usage**
+1. Smoke run (zero setup): Runtime ▶ Run all — a vetted-safe sample is embedded in the DATA cell
+2. Full run: set `WANT_FULL = True` in the data cell below, then ▶ Run all and upload `train.jsonl` / `val.jsonl` / `test.jsonl` (the full audited set; kept out of this repo)
+3. Training on the full set takes ~30–60 min, then auto-downloads `best_adapter.zip` and `metrics.json` back to the local `outputs/` dir
 
-**Notes**: fp16 LoRA (no bitsandbytes dependency, most version-stable). 560 training samples / 6 epochs, fits a 16G T4 comfortably. Re-run after disconnect: just ▶ Run all — data lives in the notebook, results are deterministically reproducible (fixed seed 42).
+**Notes**: fp16 LoRA (no bitsandbytes dependency, most version-stable). Full set: ~560 train samples / 6 epochs, fits a 16G T4 comfortably; embedded sample: 3 rows per split (format check + smoke training only). Re-run after disconnect: just ▶ Run all. Fixed seed 42 for reproducible metrics.
 
 #%% python
 import importlib.util
@@ -40,7 +41,8 @@ warnings.filterwarnings("ignore")
 print("Python ok")
 
 #%% python
-if not all(os.path.exists(f) for f in ("train.jsonl", "val.jsonl", "test.jsonl")):
+WANT_FULL = False  # set True to upload the full audited datasets (overrides the embedded sample)
+if WANT_FULL or not all(os.path.exists(f) for f in ("train.jsonl", "val.jsonl", "test.jsonl")):
     from google.colab import files
     up = files.upload()
     for name, raw in up.items():
